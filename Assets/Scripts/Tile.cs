@@ -9,7 +9,7 @@ namespace PathfindingDemo
         public int GridPositionY { get; private set; }
         public bool IsTraversable { get; private set; }
         public bool IsSelected { get; private set; }
-        public IEnumerable<Tile> Neighbors { get; private set; }
+        public IEnumerable<NeighborConnection> Neighbors { get; private set; }
 
         [SerializeField] private MeshRenderer meshRenderer;
         [SerializeField] private Color hoverTileColor;
@@ -17,7 +17,6 @@ namespace PathfindingDemo
         [SerializeField] private Color traversableTileColor;
         [SerializeField] private Color nontraversableTileColor;
 
-        private TileState currentTileState;
         private Color originalColor;
 
         public void Initialize(int gridPositionX, int gridPositionY)
@@ -26,27 +25,21 @@ namespace PathfindingDemo
             GridPositionX = gridPositionX;
             GridPositionY = gridPositionY;
 
-            IsTraversable = DetermineWhetherTraversable();
-            currentTileState = IsTraversable ? TileState.Traversable : TileState.NonTraversable;
+            IsTraversable = false;
 
-            SetTileState(currentTileState);
+            UpdateTileColor();
             originalColor = meshRenderer.material.color;  
         }
 
-        public void SetNeighborList(IEnumerable<Tile> neighbors)
+        public void SetTraversable(bool value)
+        {
+            IsTraversable = value;
+            UpdateTileColor();
+        }
+
+        public void SetNeighborList(IEnumerable<NeighborConnection> neighbors)
         {
             Neighbors = neighbors;
-        }
-
-        private bool DetermineWhetherTraversable()
-        {
-            return true;
-        }
-
-        private void SetTileState(TileState tileState)
-        {
-            currentTileState = tileState;
-            UpdateTileColor();
         }
 
         private void UpdateTileColor()
@@ -58,7 +51,7 @@ namespace PathfindingDemo
             }
             else
             {
-                meshRenderer.material.color = currentTileState == TileState.Traversable ? traversableTileColor : nontraversableTileColor;
+                meshRenderer.material.color = IsTraversable ? traversableTileColor : nontraversableTileColor;
                 originalColor = meshRenderer.material.color;
             }
         }

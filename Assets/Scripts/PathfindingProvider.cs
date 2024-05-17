@@ -9,7 +9,7 @@ namespace PathfindingDemo
 
         public IEnumerable<Tile> FindPath(Tile startTile, Tile endTile)
         {
-            if (startTile == null || endTile == null)
+            if (startTile == null || endTile == null || !endTile.IsTraversable)
             {
                 return null;
             }
@@ -53,21 +53,21 @@ namespace PathfindingDemo
 
                 foreach (var neighbor in currentTile.Neighbors)
                 {
-                    if (!neighbor.IsTraversable)
+                    if (!neighbor.Tile.IsTraversable)
                     {
                         continue;
                     }
 
                     int currentGScore = gScore[currentTile] + 1;
-                    if (currentGScore < gScore[neighbor])
+                    if (currentGScore < gScore[neighbor.Tile])
                     {
-                        cameFrom[neighbor] = currentTile;
-                        gScore[neighbor] = currentGScore;
-                        fScore[neighbor] = gScore[neighbor] + HeuristicCost(neighbor, endTile);
+                        cameFrom[neighbor.Tile] = currentTile;
+                        gScore[neighbor.Tile] = currentGScore;
+                        fScore[neighbor.Tile] = gScore[neighbor.Tile] + HeuristicCost(neighbor.Tile, endTile);
 
-                        if (!openSet.Contains(neighbor))
+                        if (!openSet.Contains(neighbor.Tile))
                         {
-                            openSet.Add(neighbor);
+                            openSet.Add(neighbor.Tile);
                         }
                     }
                 }

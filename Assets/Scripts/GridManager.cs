@@ -14,6 +14,7 @@ namespace PathfindingDemo
         public event PathFoundDelegate PathFoundEvent;
 
         public const float GRID_POSITION_Y = 0.1f;
+        public const float TILE_SIZE = 1f;
         public const int MAX_GRID_SIZE = 50;
 
         public Tile[,] Grid => grid;
@@ -28,6 +29,7 @@ namespace PathfindingDemo
         [SerializeField] private PlayerController playerController;
         [SerializeField] private PathfindingProvider pathfindingProvider;
         [SerializeField] private LayerMask tileMask;
+        [SerializeField] private LayerMask tileObstacleMask;
 
         private IEnumerable<Tile> currentPath = null;
         private IEnumerable<Tile> previousPath = null;
@@ -73,27 +75,27 @@ namespace PathfindingDemo
             }
         }
 
-        private IEnumerable<Tile> GetNeighbors(Tile tile)
+        private IEnumerable<NeighborConnection> GetNeighbors(Tile tile)
         {
-            var neighbors = new List<Tile>();
+            var neighbors = new List<NeighborConnection>();
             int x = tile.GridPositionX;
             int y = tile.GridPositionY;
 
             if (x > 0)
             {
-                neighbors.Add(grid[x - 1, y]);
+                neighbors.Add(new (grid[x - 1, y], Direction.West));
             }
             if (x < gridWidth - 1)
             {
-                neighbors.Add(grid[x + 1, y]);
+                neighbors.Add(new(grid[x + 1, y], Direction.East));
             }
             if (y > 0)
             {
-                neighbors.Add(grid[x, y - 1]);
+                neighbors.Add(new(grid[x, y - 1], Direction.South));
             }
             if (y < gridHeight - 1)
             {
-                neighbors.Add(grid[x, y + 1]);
+                neighbors.Add(new(grid[x, y + 1], Direction.North));
             }
 
             return neighbors;
@@ -133,6 +135,7 @@ namespace PathfindingDemo
             newTile = tilePool.GetFreeObject();
             newTile.transform.position = new Vector3(x, GRID_POSITION_Y, y);
             newTile.Initialize(x, y);
+            newTile.SetTraversable(IsTraversable(newTile));
             newTile.gameObject.name = $"Tile ({x},{y})";
             newTile.transform.SetParent(transform);
         }
@@ -162,12 +165,15 @@ namespace PathfindingDemo
                         currentStartTile = currentHoveringTile;
                         SetTileSelection(currentStartTile, true);
                     }
-                    
                     else if (currentEndTile == null)
                     {
                         currentEndTile = currentHoveringTile;
-                        PathFoundEvent?.Invoke(currentPath);
-                        DeselectPathTiles();
+                        var path = GetPath(currentEndTile);
+                        if (path != null)
+                        {
+                            PathFoundEvent?.Invoke(currentPath);
+                            DeselectPathTiles();
+                        }
                     }
                 }
                 else
@@ -192,16 +198,21 @@ namespace PathfindingDemo
                         }
                     }
                 }
+                else if (previousPath != null)
+                {
+                    DisablePreviousPathPoints();
+                }
             }
         }
 
+
         private void DisablePreviousPathPoints()
         {
-            if (previousPath != null && previousPath.Any())
+            if (previousPath != null)
             {
                 foreach (var tile in previousPath)
                 {
-                    if (!currentPath.Contains(tile))
+                    if (currentPath == null || !currentPath.Contains(tile))
                     {
                         SetTileSelection(tile, false);
                     }
@@ -253,6 +264,11 @@ namespace PathfindingDemo
             }
 
             return false;
+        }
+
+        private bool IsTraversable(Tile tile)
+        {
+            return !(Physics.CheckSphere(new Vector3(tile.GridPositionX, GRID_POSITION_Y + (TILE_SIZE * 0.5f), tile.GridPositionY), TILE_SIZE * 0.5f, tileObstacleMask));
         }
     }
 }
