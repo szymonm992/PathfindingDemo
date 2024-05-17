@@ -22,7 +22,7 @@ namespace PathfindingDemo
         public Tile[,] Grid => grid;
         public bool IsSelectingTilesPermitted => !playerController.IsMoving;
         public Tile CurrentStartTile { get; private set; } = null;
-        public Tile PlayerTile;
+        public Tile PlayerTile { get; private set; } = null;
 
         [Range(0, MAX_GRID_SIZE)]
         [SerializeField] private int gridWidth = 15;
@@ -67,7 +67,7 @@ namespace PathfindingDemo
             gridWidth = newWidth;
             gridHeight = newHeight;
 
-            CreateGrid();
+            CreateGrid().Forget();
         }
 
         private IEnumerable<NeighborConnection> GetNeighbors(Tile tile)
@@ -133,30 +133,24 @@ namespace PathfindingDemo
         {
             var visited = new bool[gridWidth, gridHeight];
 
-            for (int x = 0; x < gridWidth; x++)
+            foreach (var tile in grid)
             {
-                for (int y = 0; y < gridHeight; y++)
+                tile.SetAccessible(tile.IsTraversable);
+            }
+
+            // Perform flood-fill from a traversable tile
+            foreach (var tile in grid)
+            {
+                if (tile.IsTraversable && !visited[tile.GridPositionX, tile.GridPositionY])
                 {
-                    var tile = grid[x, y];
-                    bool isEnclosedByObstacles = !tile.Neighbors.Any(neighbor => neighbor.Tile.IsTraversable);
+                    var region = new List<Tile>();
+                    bool touchesBoundary = FloodFill(tile, visited, region);
 
-                    if (isEnclosedByObstacles)
+                    if (!touchesBoundary && !region.Contains(PlayerTile))
                     {
-                        tile.SetAccessible(false);
-                        continue;
-                    }
-
-                    if (tile.IsTraversable && !visited[x, y])
-                    {
-                        var region = new List<Tile>();
-                        bool touchesBoundary = FloodFill(tile, visited, region);
-
-                        if (touchesBoundary && !region.Contains(PlayerTile))
+                        foreach (var regionTile in region)
                         {
-                            foreach (var regionTile in region)
-                            {
-                                regionTile.SetAccessible(false);
-                            }
+                            regionTile.SetAccessible(false);
                         }
                     }
                 }
@@ -167,7 +161,7 @@ namespace PathfindingDemo
         {
             var stack = new Stack<Tile>();
             stack.Push(startTile);
-            bool touchesBoundary = false;
+            bool playerInside = false;
 
             while (stack.Count > 0)
             {
@@ -183,9 +177,9 @@ namespace PathfindingDemo
                 visited[x, y] = true;
                 region.Add(tile);
 
-                if (IsEdgeTile(x, y))
+                if (tile == PlayerTile)
                 {
-                    touchesBoundary = true;
+                    playerInside = true;
                 }
 
                 foreach (var neighbor in tile.Neighbors)
@@ -197,7 +191,15 @@ namespace PathfindingDemo
                 }
             }
 
-            return touchesBoundary;
+            if (!playerInside)
+            {
+                foreach (var regionTile in region)
+                {
+                    regionTile.SetAccessible(false);
+                }
+            }
+
+            return playerInside;
         }
 
         private async UniTask<Tile> CreateTileAtPosition(int x, int y)
@@ -303,7 +305,6 @@ namespace PathfindingDemo
                 }
             }
         }
-
 
         private void DisablePreviousPathPoints()
         {

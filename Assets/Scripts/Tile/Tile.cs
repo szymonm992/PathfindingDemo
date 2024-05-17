@@ -42,16 +42,6 @@ namespace PathfindingDemo
             UpdateTileColor();
         }
 
-        public void UpdateAccessibility()
-        {
-            if (IsAccessible)
-            {
-                IsAccessible = Neighbors.Any(neighbor => neighbor.Tile.IsTraversable);
-            }
-            
-            UpdateTileColor();
-        }
-
         public void SetNeighbors(IEnumerable<NeighborConnection> neighbors)
         {
             Neighbors = neighbors;
