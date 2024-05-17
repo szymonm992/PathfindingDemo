@@ -116,7 +116,7 @@ namespace PathfindingDemo
 
             foreach (Tile tile in grid)
             {
-                tile.SetNeighborList(GetNeighbors(tile));
+                tile.SetNeighbors(GetNeighbors(tile));
             }
 
             previousPath = currentPath;
@@ -264,7 +264,28 @@ namespace PathfindingDemo
 
         private bool IsTraversable(Tile tile)
         {
-            return !(Physics.CheckSphere(new Vector3(tile.GridPositionX, GRID_POSITION_Y + (TILE_SIZE * 0.5f), tile.GridPositionY), TILE_SIZE * 0.5f, tileObstacleMask));
+            return !Physics.CheckBox(new (tile.GridPositionX, GRID_POSITION_Y + (TILE_SIZE * 0.5f) + (TILE_SIZE * 0.5f), tile.GridPositionY),
+                new (TILE_SIZE * 0.5f, TILE_SIZE * 0.5f, TILE_SIZE * 0.5f),
+                Quaternion.identity, tileObstacleMask);
         }
+
+        #if UNITY_EDITOR
+        private void OnDrawGizmos()
+        {
+            Gizmos.color = Color.red;
+            float offset = TILE_SIZE * 0.5f;
+
+            var bottomLeft = new Vector3(-offset, GRID_POSITION_Y, -offset);
+            var bottomRight = new Vector3(gridWidth - offset, GRID_POSITION_Y, -offset);
+            Gizmos.DrawLine(bottomLeft, bottomRight);
+
+            var topLeft = new Vector3(-offset, GRID_POSITION_Y, gridHeight - offset);
+            var topRight = new Vector3(gridWidth - offset, GRID_POSITION_Y, gridHeight - offset);
+            Gizmos.DrawLine(topLeft, topRight);
+
+            Gizmos.DrawLine(bottomLeft, topLeft);
+            Gizmos.DrawLine(bottomRight, topRight);
+        }
+        #endif
     }
 }

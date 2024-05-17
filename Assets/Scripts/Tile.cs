@@ -21,10 +21,10 @@ namespace PathfindingDemo
 
         public void Initialize(int gridPositionX, int gridPositionY)
         {
-            Neighbors = null;
             GridPositionX = gridPositionX;
             GridPositionY = gridPositionY;
 
+            Neighbors = null;
             IsTraversable = false;
 
             UpdateTileColor();
@@ -37,7 +37,7 @@ namespace PathfindingDemo
             UpdateTileColor();
         }
 
-        public void SetNeighborList(IEnumerable<NeighborConnection> neighbors)
+        public void SetNeighbors(IEnumerable<NeighborConnection> neighbors)
         {
             Neighbors = neighbors;
         }
