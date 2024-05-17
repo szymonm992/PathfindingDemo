@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace PathfindingDemo
@@ -8,6 +9,7 @@ namespace PathfindingDemo
         public int GridPositionY { get; private set; }
         public bool IsTraversable { get; private set; }
         public bool IsSelected { get; private set; }
+        public IEnumerable<Tile> Neighbors { get; private set; }
 
         [SerializeField] private MeshRenderer meshRenderer;
         [SerializeField] private Color hoverTileColor;
@@ -20,6 +22,7 @@ namespace PathfindingDemo
 
         public void Initialize(int gridPositionX, int gridPositionY)
         {
+            Neighbors = null;
             GridPositionX = gridPositionX;
             GridPositionY = gridPositionY;
 
@@ -28,6 +31,11 @@ namespace PathfindingDemo
 
             SetTileState(currentTileState);
             originalColor = meshRenderer.material.color;  
+        }
+
+        public void SetNeighborList(IEnumerable<Tile> neighbors)
+        {
+            Neighbors = neighbors;
         }
 
         private bool DetermineWhetherTraversable()

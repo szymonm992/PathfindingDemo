@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace PathfindingDemo
@@ -7,14 +8,15 @@ namespace PathfindingDemo
     public class GridManager : MonoBehaviour
     {
         public delegate void GridSizeUpdateDelegate(int width, int height);
-        public delegate void PathSelectedDelegate(IEnumerable<Vector3> path);
+        public delegate void PathFoundDelegate(IEnumerable<Tile> path);
 
         public event GridSizeUpdateDelegate GridSizeUpdateEvent;
-        public event PathSelectedDelegate PathSelectedEvent;
+        public event PathFoundDelegate PathFoundEvent;
 
         public const float GRID_POSITION_Y = 0.1f;
         public const int MAX_GRID_SIZE = 50;
 
+        public Tile[,] Grid => grid;
         public bool IsSelectingTilesPermitted => !playerController.IsMoving; 
 
         [Range(0, MAX_GRID_SIZE)]
@@ -27,6 +29,8 @@ namespace PathfindingDemo
         [SerializeField] private PathfindingProvider pathfindingProvider;
         [SerializeField] private LayerMask tileMask;
 
+        private IEnumerable<Tile> currentPath = null;
+        private IEnumerable<Tile> previousPath = null;
         private MonoObjectPool<Tile> tilePool;
         private Tile currentHoveringTile = null;
         private Tile currentStartTile = null;
@@ -59,18 +63,42 @@ namespace PathfindingDemo
                 newWidth = Mathf.Max(Mathf.Min(newWidth, MAX_GRID_SIZE), 1);
                 newHeight = Mathf.Max(Mathf.Min(newHeight, MAX_GRID_SIZE), 1);
 
+                previousGridWidth = gridWidth;
+                previousGridHeight = gridHeight;
+
                 gridWidth = newWidth;
                 gridHeight = newHeight;
 
                 CreateGrid();
-
-                previousGridWidth = gridWidth;
-                previousGridHeight = gridHeight;
-
-                GridSizeUpdateEvent?.Invoke(newWidth, newHeight);
             }
         }
-        
+
+        private IEnumerable<Tile> GetNeighbors(Tile tile)
+        {
+            var neighbors = new List<Tile>();
+            int x = tile.GridPositionX;
+            int y = tile.GridPositionY;
+
+            if (x > 0)
+            {
+                neighbors.Add(grid[x - 1, y]);
+            }
+            if (x < gridWidth - 1)
+            {
+                neighbors.Add(grid[x + 1, y]);
+            }
+            if (y > 0)
+            {
+                neighbors.Add(grid[x, y - 1]);
+            }
+            if (y < gridHeight - 1)
+            {
+                neighbors.Add(grid[x, y + 1]);
+            }
+
+            return neighbors;
+        }
+
         private void CreateGrid()
         {
             if (grid != null)
@@ -90,6 +118,11 @@ namespace PathfindingDemo
                     CreateTileAtPosition(x, y, out var newTile);
                     grid[x, y] = newTile;
                 }
+            }
+
+            foreach (Tile tile in grid)
+            {
+                tile.SetNeighborList(GetNeighbors(tile));
             }
 
             GridSizeUpdateEvent?.Invoke(gridWidth, gridHeight);
@@ -129,35 +162,71 @@ namespace PathfindingDemo
                         currentStartTile = currentHoveringTile;
                         SetTileSelection(currentStartTile, true);
                     }
+                    
                     else if (currentEndTile == null)
                     {
                         currentEndTile = currentHoveringTile;
-                        var path = GetPath();
-
-                        if (path != null)
-                        {
-                            PathSelectedEvent?.Invoke(path);
-                        }
-
-                        DeselectAllTiles();
+                        PathFoundEvent?.Invoke(currentPath);
+                        DeselectPathTiles();
                     }
                 }
                 else
                 {
-                    DeselectAllTiles();
+                    DeselectPathTiles();
+                }
+            }
+            else
+            {
+                previousPath = currentPath;
+                currentPath = GetPath(currentHoveringTile);
+
+                if (currentPath != null)
+                {
+                    DisablePreviousPathPoints();
+
+                    foreach (var pathTile in currentPath)
+                    {
+                        if (!pathTile.IsSelected)
+                        {
+                            SetTileSelection(pathTile, true);
+                        }
+                    }
                 }
             }
         }
 
-        private IEnumerable<Vector3> GetPath()
+        private void DisablePreviousPathPoints()
         {
-            return pathfindingProvider?.FindPath(currentStartTile, currentEndTile);
+            if (previousPath != null && previousPath.Any())
+            {
+                foreach (var tile in previousPath)
+                {
+                    if (!currentPath.Contains(tile))
+                    {
+                        SetTileSelection(tile, false);
+                    }
+                }
+            }
         }
 
-        private void DeselectAllTiles()
+        private IEnumerable<Tile> GetPath(Tile endTile)
+        {
+            return pathfindingProvider?.FindPath(currentStartTile, endTile);
+        }
+
+        private void DeselectPathTiles()
         {
             SetTileSelection(currentStartTile, false);
             SetTileSelection(currentEndTile, false);
+
+            if (currentPath != null)
+            {
+                foreach (var tile in currentPath)
+                {
+                    SetTileSelection(tile, false);
+                }
+            }
+
             currentStartTile = null;
             currentEndTile = null;
         }

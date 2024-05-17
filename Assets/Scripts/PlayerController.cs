@@ -9,13 +9,13 @@ namespace PathfindingDemo
 
         [SerializeField] private GridManager gridManager;
 
-        public void MoveAlongThePath(IEnumerable<Vector3> path)
+        public void MoveAlongThePath(IEnumerable<Tile> path)
         {
             IsMoving = true;
 
-            foreach (var point in path)
+            foreach (var tile in path)
             {
-                Debug.Log($"Path point {point}");
+                Debug.Log($"Path point (X:{tile.GridPositionX}, Y:{GridManager.GRID_POSITION_Y}, Z:{tile.GridPositionY})");
             }
 
             IsMoving = false;
@@ -23,15 +23,15 @@ namespace PathfindingDemo
 
         private void Awake()
         {
-            gridManager.PathSelectedEvent += OnPathFound;
+            gridManager.PathFoundEvent += OnPathFound;
         }
 
         private void OnDestroy()
         {
-            gridManager.PathSelectedEvent -= OnPathFound;
+            gridManager.PathFoundEvent -= OnPathFound;
         }
 
-        private void OnPathFound(IEnumerable<Vector3> path)
+        private void OnPathFound(IEnumerable<Tile> path)
         {
             MoveAlongThePath(path);
         }

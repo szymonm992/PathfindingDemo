@@ -304,6 +304,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c14ac4a356c16a4a8be5fc4c4c48302, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gridManager: {fileID: 1886297378}
 --- !u!4 &395463792
 Transform:
   m_ObjectHideFlags: 0
@@ -549,7 +550,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 6d56f33bf496e45479808e9ad4e6f2b3, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -604,6 +605,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1886297379}
   - component: {fileID: 1886297378}
+  - component: {fileID: 1886297380}
   m_Layer: 0
   m_Name: GridManager
   m_TagString: Untagged
@@ -628,6 +630,8 @@ MonoBehaviour:
   tilePrefab: {fileID: 3627732998158230737, guid: d7359b4ddb082094e8feed58c333cc5c,
     type: 3}
   mainCamera: {fileID: 330585545}
+  playerController: {fileID: 395463791}
+  pathfindingProvider: {fileID: 1886297380}
   tileMask:
     serializedVersion: 2
     m_Bits: 64
@@ -646,6 +650,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1886297380
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1886297377}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbb4ee1940ea25e4680ae5032f80e244, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gridManager: {fileID: 1886297378}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
