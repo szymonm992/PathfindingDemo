@@ -39,8 +39,6 @@ namespace PathfindingDemo
         private Tile currentEndTile = null;
         private Tile previousHoveringTile = null;
         private Tile[,] grid;
-        private int previousGridWidth;
-        private int previousGridHeight;
         private bool isDetectingTile;
 
         public void SetTileSelection(Tile tile, bool value)
@@ -60,19 +58,12 @@ namespace PathfindingDemo
 
         public void UpdateGridSize(int newWidth, int newHeight)
         {
-            if (newWidth != previousGridWidth || newHeight != previousGridHeight)
-            {
-                newWidth = Mathf.Max(Mathf.Min(newWidth, MAX_GRID_SIZE), 1);
-                newHeight = Mathf.Max(Mathf.Min(newHeight, MAX_GRID_SIZE), 1);
+            newWidth = Mathf.Max(Mathf.Min(newWidth, MAX_GRID_SIZE), 1);
+            newHeight = Mathf.Max(Mathf.Min(newHeight, MAX_GRID_SIZE), 1);
+            gridWidth = newWidth;
+            gridHeight = newHeight;
 
-                previousGridWidth = gridWidth;
-                previousGridHeight = gridHeight;
-
-                gridWidth = newWidth;
-                gridHeight = newHeight;
-
-                CreateGrid();
-            }
+            CreateGrid();
         }
 
         private IEnumerable<NeighborConnection> GetNeighbors(Tile tile)
@@ -147,8 +138,6 @@ namespace PathfindingDemo
 
         private void Start()
         {
-            previousGridWidth = gridWidth;
-            previousGridHeight = gridHeight;
             CreateGrid();
         }
 
@@ -169,6 +158,7 @@ namespace PathfindingDemo
                     {
                         currentEndTile = currentHoveringTile;
                         var path = GetPath(currentEndTile);
+
                         if (path != null)
                         {
                             PathFoundEvent?.Invoke(currentPath);
