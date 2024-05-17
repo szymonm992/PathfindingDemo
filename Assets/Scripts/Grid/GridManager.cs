@@ -6,6 +6,8 @@ using UnityEngine;
 using PathfindingDemo.Pooling;
 using PathfindingDemo.Grid.Tile;
 using PathfindingDemo.Providers;
+using PathfindingDemo.Player.Input;
+using UnityEngine.InputSystem;
 
 namespace PathfindingDemo.GridManagement
 {
@@ -34,6 +36,7 @@ namespace PathfindingDemo.GridManagement
         [SerializeField] private int gridHeight = 15;
         [SerializeField] private Tile tilePrefab;
         [SerializeField] private Camera mainCamera;
+        [SerializeField] private InputManager inputManager;
         [SerializeField] private LayerMask tileMask;
         [SerializeField] private LayerMask tileObstacleMask;
 
@@ -238,6 +241,44 @@ namespace PathfindingDemo.GridManagement
         private void Start()
         {
             GenerateGrid().Forget();
+            inputManager.LeftMouseButtonClickEvent += OnLeftMouseButtonClick;
+        }
+
+        private void OnDestroy()
+        {
+            inputManager.LeftMouseButtonClickEvent -= OnLeftMouseButtonClick;
+        }
+
+        private void OnLeftMouseButtonClick(InputAction.CallbackContext context)
+        {
+            if (!IsSelectingTilesPermitted)
+            {
+                return;
+            }
+
+            if (isDetectingTile)
+            {
+                if (CurrentStartTile == null)
+                {
+                    CurrentStartTile = currentHoveringTile;
+                    SetTileSelection(CurrentStartTile, true);
+                }
+                else if (currentEndTile == null && currentHoveringTile != CurrentStartTile && currentHoveringTile.IsTraversable)
+                {
+                    currentEndTile = currentHoveringTile;
+                    var path = GetPath(currentEndTile);
+
+                    if (path != null)
+                    {
+                        DeselectPathTiles();
+                        PathFoundEvent?.Invoke(currentPath);
+                    }
+                }
+            }
+            else
+            {
+                DeselectPathTiles();
+            }
         }
 
         private async UniTask GenerateGrid()
@@ -250,58 +291,24 @@ namespace PathfindingDemo.GridManagement
         {
             isDetectingTile = IsTileSelected();
 
-            if (Input.GetMouseButtonDown(0))
+            previousPath = currentPath;
+            currentPath = GetPath(currentHoveringTile);
+
+            if (currentPath != null)
             {
-                if (!IsSelectingTilesPermitted)
-                {
-                    return;
-                }
+                DisablePreviousPathPoints();
 
-                if (isDetectingTile)
+                foreach (var pathTile in currentPath)
                 {
-                    if (CurrentStartTile == null)
+                    if (!pathTile.IsSelected)
                     {
-                        CurrentStartTile = currentHoveringTile;
-                        SetTileSelection(CurrentStartTile, true);
+                        SetTileSelection(pathTile, true);
                     }
-                    else if (currentEndTile == null && currentHoveringTile != CurrentStartTile && currentHoveringTile.IsTraversable)
-                    {
-                        currentEndTile = currentHoveringTile;
-                        var path = GetPath(currentEndTile);
-
-                        if (path != null)
-                        {
-                            DeselectPathTiles();
-                            PathFoundEvent?.Invoke(currentPath);
-                        }
-                    }
-                }
-                else
-                {
-                    DeselectPathTiles();
                 }
             }
-            else
+            else if (previousPath != null)
             {
-                previousPath = currentPath;
-                currentPath = GetPath(currentHoveringTile);
-
-                if (currentPath != null)
-                {
-                    DisablePreviousPathPoints();
-
-                    foreach (var pathTile in currentPath)
-                    {
-                        if (!pathTile.IsSelected)
-                        {
-                            SetTileSelection(pathTile, true);
-                        }
-                    }
-                }
-                else if (previousPath != null)
-                {
-                    DisablePreviousPathPoints();
-                }
+                DisablePreviousPathPoints();
             }
         }
 

@@ -6,7 +6,9 @@
         "PathfindingDemo.Pooling",
         "PathfindingDemo.Grid.Tile",
         "PathfindingDemo.Providers",
-        "PathfindingDemo.Pathfinding"
+        "PathfindingDemo.Pathfinding",
+        "PathfindingDemo.Player.Input",
+        "Unity.InputSystem"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

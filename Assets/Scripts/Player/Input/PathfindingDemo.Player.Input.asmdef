@@ -1,9 +1,7 @@
 {
-    "name": "PathfindingDemo",
-    "rootNamespace": "",
+    "name": "PathfindingDemo.Player.Input",
+    "rootNamespace": "PathfindingDemo.Player.Input",
     "references": [
-        "GUID:f51ebe6a0ceec4240a699833d6309b23",
-        "GUID:e062bf77fca351a40891c4ec5001fd4f",
         "GUID:75469ad4d38634e559750d17036d5f7c"
     ],
     "includePlatforms": [],

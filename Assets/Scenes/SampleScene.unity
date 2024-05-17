@@ -1335,6 +1335,7 @@ GameObject:
   m_Component:
   - component: {fileID: 395463792}
   - component: {fileID: 395463791}
+  - component: {fileID: 395463793}
   m_Layer: 7
   m_Name: Player
   m_TagString: Untagged
@@ -1354,6 +1355,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c14ac4a356c16a4a8be5fc4c4c48302, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  PlayerTile: {fileID: 0}
   playerMovementSpeed: 5
   gridManager: {fileID: 1886297378}
 --- !u!4 &395463792
@@ -1372,6 +1374,18 @@ Transform:
   - {fileID: 1426484798}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &395463793
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 395463790}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0bc7a056360868540bbdc5766bc824fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
@@ -3885,7 +3899,6 @@ MonoBehaviour:
   tilePrefab: {fileID: 3627732998158230737, guid: d7359b4ddb082094e8feed58c333cc5c,
     type: 3}
   mainCamera: {fileID: 330585545}
-  playerController: {fileID: 395463791}
   tileMask:
     serializedVersion: 2
     m_Bits: 64
