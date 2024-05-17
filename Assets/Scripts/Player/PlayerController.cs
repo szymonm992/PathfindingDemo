@@ -2,38 +2,37 @@ using System.Collections.Generic;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 using System;
+using PathfindingDemo.Providers;
+using PathfindingDemo.GridManagement;
+using PathfindingDemo.Grid.Tile;
 
 namespace PathfindingDemo
 {
-    public class PlayerController : MonoBehaviour
+    public class PlayerController : MonoBehaviour, IPlayerProvider
     {
         public const float MINIMUM_DISTANCE_THRESHOLD = 0.01f;
 
         public bool IsMoving { get; private set; }
+        public Tile PlayerTile;
 
         [Range(1f, 20f)]
         [SerializeField] private float playerMovementSpeed = 5f;
         [SerializeField] private GridManager gridManager;
 
-        public delegate void PlayerPositionChangedDelegate(Vector3 position);
-        public event PlayerPositionChangedDelegate OnPlayerPositionChanged;
-
         public async UniTask MoveAlongThePathAsync(IEnumerable<Tile> path)
         {
             IsMoving = true;
 
-            foreach (var tile in path)
+            foreach (var point in path)
             {
-                // Check if the current tile is the start tile and if it is not the player tile
-                if (tile != gridManager.CurrentStartTile)
+                if (point != PlayerTile)
                 {
-                    // Move towards the tile
-                    await MoveTowards(tile.transform.position);
+                    await MoveTowards(point.transform.position);
+                    PlayerTile = gridManager.RecalculatePlayerTile(transform.position);
                 }
             }
 
             IsMoving = false;
-            OnPlayerPositionChanged?.Invoke(transform.position);
         }
 
         private async UniTask MoveTowards(Vector3 targetPosition)
@@ -49,17 +48,17 @@ namespace PathfindingDemo
         {
             gridManager.PathFoundEvent += OnPathFound;
             gridManager.GridSizeUpdateEvent += OnGridSizeUpdate;
+            
         }
 
         private void OnGridSizeUpdate(int _, int __)
         {
-            OnPlayerPositionChanged?.Invoke(transform.position);
+            PlayerTile = gridManager.RecalculatePlayerTile(transform.position);
         }
 
         private void OnDestroy()
         {
             gridManager.PathFoundEvent -= OnPathFound;
-            gridManager.GridSizeUpdateEvent -= OnGridSizeUpdate;
         }
 
         private async void OnPathFound(IEnumerable<Tile> path)

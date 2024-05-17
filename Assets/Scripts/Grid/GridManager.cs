@@ -3,8 +3,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using PathfindingDemo.Pooling;
+using PathfindingDemo.Grid.Tile;
+using PathfindingDemo.Providers;
 
-namespace PathfindingDemo
+namespace PathfindingDemo.GridManagement
 {
     public class GridManager : MonoBehaviour
     {
@@ -20,7 +23,8 @@ namespace PathfindingDemo
         public const int TILE_REGULAR_COST = 1;
 
         public Tile[,] Grid => grid;
-        public bool IsSelectingTilesPermitted => !playerController.IsMoving;
+        //public bool IsSelectingTilesPermitted => !playerProvider.IsMoving;
+        public bool IsSelectingTilesPermitted => true;
         public Tile CurrentStartTile { get; private set; } = null;
         public Tile PlayerTile { get; private set; } = null;
 
@@ -30,7 +34,6 @@ namespace PathfindingDemo
         [SerializeField] private int gridHeight = 15;
         [SerializeField] private Tile tilePrefab;
         [SerializeField] private Camera mainCamera;
-        [SerializeField] private PlayerController playerController;
         [SerializeField] private LayerMask tileMask;
         [SerializeField] private LayerMask tileObstacleMask;
 
@@ -67,7 +70,7 @@ namespace PathfindingDemo
             gridWidth = newWidth;
             gridHeight = newHeight;
 
-            CreateGrid().Forget();
+            GenerateGrid().Forget();
         }
 
         private IEnumerable<NeighborConnection> GetNeighbors(Tile tile)
@@ -212,7 +215,7 @@ namespace PathfindingDemo
             return newTile;
         }
 
-        private void UpdatePlayerTile(Vector3 playerPosition)
+        public Tile RecalculatePlayerTile(Vector3 playerPosition)
         {
             int x = Mathf.RoundToInt(playerPosition.x / TILE_SIZE);
             int y = Mathf.RoundToInt(playerPosition.z / TILE_SIZE);
@@ -220,31 +223,27 @@ namespace PathfindingDemo
             if (x >= 0 && x < gridWidth && y >= 0 && y < gridHeight)
             {
                 PlayerTile = grid[x, y];
-                CalculateEnclosedAreas();
+                return PlayerTile;
             }
+
+            return null;
         }
 
         private void Awake()
         {
-            pathfindingProvider = new AStarPathfinding();
-            playerController.OnPlayerPositionChanged += UpdatePlayerTile;
+            pathfindingProvider = new AStarPathfinding(TILE_REGULAR_COST);
             tilePool = new MonoObjectPool<Tile>(tilePrefab, MAX_GRID_SIZE * MAX_GRID_SIZE);
         }
 
         private void Start()
         {
-            StartAsync().Forget();
+            GenerateGrid().Forget();
         }
 
-        private async UniTask StartAsync()
+        private async UniTask GenerateGrid()
         {
             await CreateGrid();
             CalculateEnclosedAreas();
-        }
-
-        private void OnDestroy()
-        {
-            playerController.OnPlayerPositionChanged -= UpdatePlayerTile;
         }
 
         private void Update()

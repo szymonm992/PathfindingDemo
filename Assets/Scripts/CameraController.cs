@@ -1,3 +1,4 @@
+using PathfindingDemo.GridManagement;
 using UnityEngine;
 
 namespace PathfindingDemo

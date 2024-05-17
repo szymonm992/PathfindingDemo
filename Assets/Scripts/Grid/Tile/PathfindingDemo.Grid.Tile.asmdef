@@ -1,0 +1,14 @@
+{
+    "name": "PathfindingDemo.Grid.Tile",
+    "rootNamespace": "PathfindingDemo.Grid.Tile",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

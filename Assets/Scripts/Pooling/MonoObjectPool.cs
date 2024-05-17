@@ -2,7 +2,7 @@ using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace PathfindingDemo
+namespace PathfindingDemo.Pooling
 {
     public class MonoObjectPool<T> where T : MonoBehaviour
     {

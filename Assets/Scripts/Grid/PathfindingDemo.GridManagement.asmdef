@@ -1,0 +1,20 @@
+{
+    "name": "PathfindingDemo.GridManagement",
+    "rootNamespace": "PathfindingDemo.GridManagement",
+    "references": [
+        "UniTask",
+        "PathfindingDemo.Pooling",
+        "PathfindingDemo.Grid.Tile",
+        "PathfindingDemo.Providers",
+        "PathfindingDemo.Pathfinding"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,0 +1,17 @@
+{
+    "name": "PathfindingDemo.Pathfinding",
+    "rootNamespace": "PathfindingDemo.Pathfinding",
+    "references": [
+        "GUID:527741d1576c32f44b4c5021b4e18911",
+        "GUID:9e9579d4039290a4e9ce43929621f74c"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

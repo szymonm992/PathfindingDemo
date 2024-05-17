@@ -1,10 +1,18 @@
 using System.Collections.Generic;
 using UnityEngine;
+using PathfindingDemo.Grid.Tile;
 
 namespace PathfindingDemo
 {
     public class AStarPathfinding : IPathfindingProvider
     {
+        private int tileCost = 1;
+
+        public AStarPathfinding(int tileCost)
+        { 
+            this.tileCost = tileCost;   
+        }
+
         public IEnumerable<Tile> FindPath(Tile startTile, Tile endTile)
         {
             if (startTile == null || endTile == null || !endTile.IsAccessible)
@@ -48,7 +56,7 @@ namespace PathfindingDemo
                         continue;
                     }
 
-                    int temporaryGScore = gScore[currentTile] + GridManager.TILE_REGULAR_COST;
+                    int temporaryGScore = gScore[currentTile] + tileCost;
 
                     if (!gScore.ContainsKey(neighbor.Tile) || temporaryGScore < gScore[neighbor.Tile])
                     {

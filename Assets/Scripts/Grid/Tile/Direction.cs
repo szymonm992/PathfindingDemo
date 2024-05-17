@@ -1,4 +1,4 @@
-namespace PathfindingDemo
+namespace PathfindingDemo.Grid.Tile
 {
     public enum Direction
     {
