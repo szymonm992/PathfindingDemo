@@ -16,6 +16,7 @@ namespace PathfindingDemo
         public const float GRID_POSITION_Y = 0.1f;
         public const float TILE_SIZE = 1f;
         public const int MAX_GRID_SIZE = 50;
+        public const int TILE_REGULAR_COST = 1;
 
         public Tile[,] Grid => grid;
         public bool IsSelectingTilesPermitted => !playerController.IsMoving; 
@@ -118,6 +119,10 @@ namespace PathfindingDemo
                 tile.SetNeighborList(GetNeighbors(tile));
             }
 
+            previousPath = currentPath;
+            DeselectPathTiles();
+            DisablePreviousPathPoints();
+
             GridSizeUpdateEvent?.Invoke(gridWidth, gridHeight);
         }
 
@@ -133,7 +138,7 @@ namespace PathfindingDemo
 
         private void Awake()
         {
-            pathfindingProvider = new AStarPathfinding(this);
+            pathfindingProvider = new AStarPathfinding();
             tilePool = new MonoObjectPool<Tile>(tilePrefab, MAX_GRID_SIZE * MAX_GRID_SIZE);
         }
 

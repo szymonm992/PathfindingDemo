@@ -5,14 +5,6 @@ namespace PathfindingDemo
 {
     public class AStarPathfinding : IPathfindingProvider
     {
-        private GridManager gridManager;
-
-        public AStarPathfinding(GridManager gridManager)
-        {
-            this.gridManager = gridManager;
-            Debug.Assert(gridManager != null, "Grid manager cannot be null!");
-        }
-
         public IEnumerable<Tile> FindPath(Tile startTile, Tile endTile)
         {
             if (startTile == null || endTile == null || !endTile.IsTraversable)
@@ -20,27 +12,20 @@ namespace PathfindingDemo
                 return null;
             }
 
-            // Initialize open and closed sets
             var openSet = new HashSet<Tile> { startTile };
-            var cameFrom = new Dictionary<Tile, Tile>();
-            var gScore = new Dictionary<Tile, int>();
-            var fScore = new Dictionary<Tile, int>();
-
-            // Initialize g and f scores
-            foreach (var tile in gridManager.Grid)
+            var parentTileMap = new Dictionary<Tile, Tile>();
+            var gScore = new Dictionary<Tile, int>
             {
-                gScore[tile] = int.MaxValue;
-                fScore[tile] = int.MaxValue;
-            }
-
-            gScore[startTile] = 0;
-            fScore[startTile] = HeuristicCost(startTile, endTile);
+                [startTile] = 0
+            };
+            var fScore = new Dictionary<Tile, int>
+            {
+                [startTile] = HeuristicCost(startTile, endTile)
+            };
 
             while (openSet.Count > 0)
             {
-                // Find the tile with the lowest fScore
                 Tile currentTile = null;
-
                 foreach (var tile in openSet)
                 {
                     if (currentTile == null || fScore[tile] < fScore[currentTile])
@@ -51,8 +36,7 @@ namespace PathfindingDemo
 
                 if (currentTile == endTile)
                 {
-                    // Path found, reconstruct and return it
-                    return ReconstructPath(cameFrom, currentTile);
+                    return ReconstructPath(parentTileMap, currentTile);
                 }
 
                 openSet.Remove(currentTile);
@@ -64,11 +48,12 @@ namespace PathfindingDemo
                         continue;
                     }
 
-                    int currentGScore = gScore[currentTile] + 1;
-                    if (currentGScore < gScore[neighbor.Tile])
+                    int temporaryGScore = gScore[currentTile] + GridManager.TILE_REGULAR_COST;
+
+                    if (!gScore.ContainsKey(neighbor.Tile) || temporaryGScore < gScore[neighbor.Tile])
                     {
-                        cameFrom[neighbor.Tile] = currentTile;
-                        gScore[neighbor.Tile] = currentGScore;
+                        parentTileMap[neighbor.Tile] = currentTile;
+                        gScore[neighbor.Tile] = temporaryGScore;
                         fScore[neighbor.Tile] = gScore[neighbor.Tile] + HeuristicCost(neighbor.Tile, endTile);
 
                         if (!openSet.Contains(neighbor.Tile))
@@ -88,14 +73,14 @@ namespace PathfindingDemo
             return Mathf.Abs(from.GridPositionX - to.GridPositionX) + Mathf.Abs(from.GridPositionY - to.GridPositionY);
         }
 
-        private IEnumerable<Tile> ReconstructPath(Dictionary<Tile, Tile> cameFrom, Tile currentTile)
+        private IEnumerable<Tile> ReconstructPath(Dictionary<Tile, Tile> parentTileMap, Tile currentTile)
         {
             var path = new List<Tile>();
 
-            while (cameFrom.ContainsKey(currentTile))
+            while (parentTileMap.ContainsKey(currentTile))
             {
                 path.Add(currentTile);
-                currentTile = cameFrom[currentTile];
+                currentTile = parentTileMap[currentTile];
             }
 
             path.Reverse();
