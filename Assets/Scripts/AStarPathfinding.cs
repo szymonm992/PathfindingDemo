@@ -7,7 +7,7 @@ namespace PathfindingDemo
     {
         public IEnumerable<Tile> FindPath(Tile startTile, Tile endTile)
         {
-            if (startTile == null || endTile == null || !endTile.IsTraversable)
+            if (startTile == null || endTile == null || !endTile.IsAccessible)
             {
                 return null;
             }
@@ -43,7 +43,7 @@ namespace PathfindingDemo
 
                 foreach (var neighbor in currentTile.Neighbors)
                 {
-                    if (!neighbor.Tile.IsTraversable)
+                    if (!neighbor.Tile.IsAccessible)
                     {
                         continue;
                     }

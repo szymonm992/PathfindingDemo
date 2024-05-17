@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace PathfindingDemo
@@ -8,6 +9,7 @@ namespace PathfindingDemo
         public int GridPositionX { get; private set; }
         public int GridPositionY { get; private set; }
         public bool IsTraversable { get; private set; }
+        public bool IsAccessible { get; private set; }
         public bool IsSelected { get; private set; }
         public bool IsEdgeTile { get; private set; }
         public IEnumerable<NeighborConnection> Neighbors { get; private set; }
@@ -20,22 +22,33 @@ namespace PathfindingDemo
 
         private Color originalColor;
 
-        public void Initialize(int gridPositionX, int gridPositionY, bool isEdgeTile)
+        public void Initialize(int gridPositionX, int gridPositionY, bool isEdgeTile, bool isTraversable)
         {
             GridPositionX = gridPositionX;
             GridPositionY = gridPositionY;
 
             Neighbors = null;
-            IsTraversable = false;
+            IsTraversable = isTraversable;
+            IsAccessible = IsTraversable;
             IsEdgeTile = isEdgeTile;
 
             UpdateTileColor();
             originalColor = meshRenderer.material.color;  
         }
 
-        public void SetTraversable(bool value)
+        public void SetAccessible(bool value)
         {
-            IsTraversable = value;
+            IsAccessible = value;
+            UpdateTileColor();
+        }
+
+        public void UpdateAccessibility()
+        {
+            if (IsAccessible)
+            {
+                IsAccessible = Neighbors.Any(neighbor => neighbor.Tile.IsTraversable);
+            }
+            
             UpdateTileColor();
         }
 
@@ -44,7 +57,7 @@ namespace PathfindingDemo
             Neighbors = neighbors;
         }
 
-        private void UpdateTileColor()
+        public void UpdateTileColor()
         {
             if (IsSelected)
             {
@@ -53,7 +66,7 @@ namespace PathfindingDemo
             }
             else
             {
-                meshRenderer.material.color = IsTraversable ? traversableTileColor : nontraversableTileColor;
+                meshRenderer.material.color = IsAccessible ? traversableTileColor : nontraversableTileColor;
                 originalColor = meshRenderer.material.color;
             }
         }

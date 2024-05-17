@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,6 +22,7 @@ namespace PathfindingDemo
         public Tile[,] Grid => grid;
         public bool IsSelectingTilesPermitted => !playerController.IsMoving;
         public Tile CurrentStartTile { get; private set; } = null;
+        public Tile PlayerTile;
 
         [Range(0, MAX_GRID_SIZE)]
         [SerializeField] private int gridWidth = 15;
@@ -94,7 +96,7 @@ namespace PathfindingDemo
             return neighbors;
         }
 
-        private void CreateGrid()
+        private async UniTask CreateGrid()
         {
             if (grid != null)
             {
@@ -110,7 +112,7 @@ namespace PathfindingDemo
             {
                 for (int y = 0; y < gridHeight; y++)
                 {
-                    CreateTileAtPosition(x, y, out var newTile);
+                    var newTile = await CreateTileAtPosition(x, y);
                     grid[x, y] = newTile;
                 }
             }
@@ -127,25 +129,120 @@ namespace PathfindingDemo
             GridSizeUpdateEvent?.Invoke(gridWidth, gridHeight);
         }
 
-        private void CreateTileAtPosition(int x, int y, out Tile newTile)
+        private void CalculateEnclosedAreas()
         {
-            newTile = tilePool.GetFreeObject();
+            var visited = new bool[gridWidth, gridHeight];
+
+            for (int x = 0; x < gridWidth; x++)
+            {
+                for (int y = 0; y < gridHeight; y++)
+                {
+                    var tile = grid[x, y];
+                    bool isEnclosedByObstacles = !tile.Neighbors.Any(neighbor => neighbor.Tile.IsTraversable);
+
+                    if (isEnclosedByObstacles)
+                    {
+                        tile.SetAccessible(false);
+                        continue;
+                    }
+
+                    if (tile.IsTraversable && !visited[x, y])
+                    {
+                        var region = new List<Tile>();
+                        bool touchesBoundary = FloodFill(tile, visited, region);
+
+                        if (touchesBoundary && !region.Contains(PlayerTile))
+                        {
+                            foreach (var regionTile in region)
+                            {
+                                regionTile.SetAccessible(false);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private bool FloodFill(Tile startTile, bool[,] visited, List<Tile> region)
+        {
+            var stack = new Stack<Tile>();
+            stack.Push(startTile);
+            bool touchesBoundary = false;
+
+            while (stack.Count > 0)
+            {
+                var tile = stack.Pop();
+                int x = tile.GridPositionX;
+                int y = tile.GridPositionY;
+
+                if (visited[x, y])
+                {
+                    continue;
+                }
+
+                visited[x, y] = true;
+                region.Add(tile);
+
+                if (IsEdgeTile(x, y))
+                {
+                    touchesBoundary = true;
+                }
+
+                foreach (var neighbor in tile.Neighbors)
+                {
+                    if (neighbor.Tile.IsTraversable && !visited[neighbor.Tile.GridPositionX, neighbor.Tile.GridPositionY])
+                    {
+                        stack.Push(neighbor.Tile);
+                    }
+                }
+            }
+
+            return touchesBoundary;
+        }
+
+        private async UniTask<Tile> CreateTileAtPosition(int x, int y)
+        {
+            Tile newTile = await tilePool.GetFreeObject();
             newTile.transform.position = new Vector3(x, GRID_POSITION_Y, y);
-            newTile.Initialize(x, y, IsEdgeTile(x, y));
-            newTile.SetTraversable(IsTraversable(newTile));
+            newTile.Initialize(x, y, IsEdgeTile(x, y), IsTraversable(x, y));
             newTile.gameObject.name = $"Tile ({x},{y})";
             newTile.transform.SetParent(transform);
+            return newTile;
+        }
+
+        private void UpdatePlayerTile(Vector3 playerPosition)
+        {
+            int x = Mathf.RoundToInt(playerPosition.x / TILE_SIZE);
+            int y = Mathf.RoundToInt(playerPosition.z / TILE_SIZE);
+
+            if (x >= 0 && x < gridWidth && y >= 0 && y < gridHeight)
+            {
+                PlayerTile = grid[x, y];
+                CalculateEnclosedAreas();
+            }
         }
 
         private void Awake()
         {
             pathfindingProvider = new AStarPathfinding();
+            playerController.OnPlayerPositionChanged += UpdatePlayerTile;
             tilePool = new MonoObjectPool<Tile>(tilePrefab, MAX_GRID_SIZE * MAX_GRID_SIZE);
         }
 
         private void Start()
         {
-            CreateGrid();
+            StartAsync().Forget();
+        }
+
+        private async UniTask StartAsync()
+        {
+            await CreateGrid();
+            CalculateEnclosedAreas();
+        }
+
+        private void OnDestroy()
+        {
+            playerController.OnPlayerPositionChanged -= UpdatePlayerTile;
         }
 
         private void Update()
@@ -258,7 +355,7 @@ namespace PathfindingDemo
             if (isRaycastingTile)
             {
                 currentHoveringTile = hit.collider.GetComponent<Tile>();
-                if (currentHoveringTile != null && currentHoveringTile.IsTraversable)
+                if (currentHoveringTile != null && currentHoveringTile.IsAccessible)
                 {
                     currentHoveringTile.SetHighlightState(true);
                     return true;
@@ -268,9 +365,9 @@ namespace PathfindingDemo
             return false;
         }
 
-        private bool IsTraversable(Tile tile)
+        private bool IsTraversable(int x, int y)
         {
-            return !Physics.CheckBox(new (tile.GridPositionX, GRID_POSITION_Y + (TILE_SIZE * 0.5f) + (TILE_SIZE * 0.5f), tile.GridPositionY),
+            return !Physics.CheckBox(new (x, GRID_POSITION_Y + (TILE_SIZE * 0.5f) + (TILE_SIZE * 0.5f), y),
                 new (TILE_SIZE * 0.5f, TILE_SIZE * 0.5f, TILE_SIZE * 0.5f),
                 Quaternion.identity, tileObstacleMask);
         }

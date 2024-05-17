@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,10 +12,16 @@ namespace PathfindingDemo
         public MonoObjectPool(T prefab, int initialSize)
         {
             this.prefab = prefab;
-            PopulatePool(initialSize);
+            PopulatePool(initialSize).Forget();
         }
 
-        private void PopulatePool(int objectsAmount)
+        private async UniTask PopulatePool(int objectsAmount)
+        {
+            int currentPoolAmount = pool.Count;
+            await PopulatePoolInternal(objectsAmount, currentPoolAmount);
+        }
+
+        private async UniTask PopulatePoolInternal(int objectsAmount, int currentPoolAmount)
         {
             for (int i = 0; i < objectsAmount; i++)
             {
@@ -22,13 +29,15 @@ namespace PathfindingDemo
                 newObject.gameObject.SetActive(false);
                 pool.Enqueue(newObject);
             }
+
+            await UniTask.WaitUntil(() => pool.Count == (currentPoolAmount + objectsAmount));
         }
 
-        public T GetFreeObject()
+        public async UniTask<T> GetFreeObject()
         {
             if (pool.Count == 0)
             {
-                PopulatePool(10);
+                await PopulatePool(10);
             }
 
             T newObject = pool.Dequeue();
