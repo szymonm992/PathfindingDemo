@@ -9,6 +9,7 @@ namespace PathfindingDemo
         public int GridPositionY { get; private set; }
         public bool IsTraversable { get; private set; }
         public bool IsSelected { get; private set; }
+        public bool IsEdgeTile { get; private set; }
         public IEnumerable<NeighborConnection> Neighbors { get; private set; }
 
         [SerializeField] private MeshRenderer meshRenderer;
@@ -19,13 +20,14 @@ namespace PathfindingDemo
 
         private Color originalColor;
 
-        public void Initialize(int gridPositionX, int gridPositionY)
+        public void Initialize(int gridPositionX, int gridPositionY, bool isEdgeTile)
         {
             GridPositionX = gridPositionX;
             GridPositionY = gridPositionY;
 
             Neighbors = null;
             IsTraversable = false;
+            IsEdgeTile = isEdgeTile;
 
             UpdateTileColor();
             originalColor = meshRenderer.material.color;  

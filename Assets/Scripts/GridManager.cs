@@ -19,7 +19,8 @@ namespace PathfindingDemo
         public const int TILE_REGULAR_COST = 1;
 
         public Tile[,] Grid => grid;
-        public bool IsSelectingTilesPermitted => !playerController.IsMoving; 
+        public bool IsSelectingTilesPermitted => !playerController.IsMoving;
+        public Tile CurrentStartTile { get; private set; } = null;
 
         [Range(0, MAX_GRID_SIZE)]
         [SerializeField] private int gridWidth = 15;
@@ -36,7 +37,7 @@ namespace PathfindingDemo
         private IEnumerable<Tile> previousPath = null;
         private MonoObjectPool<Tile> tilePool;
         private Tile currentHoveringTile = null;
-        private Tile currentStartTile = null;
+        
         private Tile currentEndTile = null;
         private Tile previousHoveringTile = null;
         private Tile[,] grid;
@@ -130,7 +131,7 @@ namespace PathfindingDemo
         {
             newTile = tilePool.GetFreeObject();
             newTile.transform.position = new Vector3(x, GRID_POSITION_Y, y);
-            newTile.Initialize(x, y);
+            newTile.Initialize(x, y, IsEdgeTile(x, y));
             newTile.SetTraversable(IsTraversable(newTile));
             newTile.gameObject.name = $"Tile ({x},{y})";
             newTile.transform.SetParent(transform);
@@ -153,22 +154,27 @@ namespace PathfindingDemo
 
             if (Input.GetMouseButtonDown(0))
             {
+                if (!IsSelectingTilesPermitted)
+                {
+                    return;
+                }
+
                 if (isDetectingTile)
                 {
-                    if (currentStartTile == null)
+                    if (CurrentStartTile == null)
                     {
-                        currentStartTile = currentHoveringTile;
-                        SetTileSelection(currentStartTile, true);
+                        CurrentStartTile = currentHoveringTile;
+                        SetTileSelection(CurrentStartTile, true);
                     }
-                    else if (currentEndTile == null && currentEndTile != currentStartTile)
+                    else if (currentEndTile == null && currentHoveringTile != CurrentStartTile && currentHoveringTile.IsTraversable)
                     {
                         currentEndTile = currentHoveringTile;
                         var path = GetPath(currentEndTile);
 
                         if (path != null)
                         {
-                            PathFoundEvent?.Invoke(currentPath);
                             DeselectPathTiles();
+                            PathFoundEvent?.Invoke(currentPath);
                         }
                     }
                 }
@@ -218,12 +224,12 @@ namespace PathfindingDemo
 
         private IEnumerable<Tile> GetPath(Tile endTile)
         {
-            return pathfindingProvider?.FindPath(currentStartTile, endTile);
+            return pathfindingProvider?.FindPath(CurrentStartTile, endTile);
         }
 
         private void DeselectPathTiles()
         {
-            SetTileSelection(currentStartTile, false);
+            SetTileSelection(CurrentStartTile, false);
             SetTileSelection(currentEndTile, false);
 
             if (currentPath != null)
@@ -234,7 +240,7 @@ namespace PathfindingDemo
                 }
             }
 
-            currentStartTile = null;
+            CurrentStartTile = null;
             currentEndTile = null;
         }
 
@@ -267,6 +273,11 @@ namespace PathfindingDemo
             return !Physics.CheckBox(new (tile.GridPositionX, GRID_POSITION_Y + (TILE_SIZE * 0.5f) + (TILE_SIZE * 0.5f), tile.GridPositionY),
                 new (TILE_SIZE * 0.5f, TILE_SIZE * 0.5f, TILE_SIZE * 0.5f),
                 Quaternion.identity, tileObstacleMask);
+        }
+
+        private bool IsEdgeTile(int x, int y)
+        {
+            return x == 0 || x == gridWidth - 1 || y == 0 || y == gridHeight - 1;
         }
 
         #if UNITY_EDITOR
