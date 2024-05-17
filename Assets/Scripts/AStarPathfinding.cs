@@ -3,9 +3,15 @@ using UnityEngine;
 
 namespace PathfindingDemo
 {
-    public class AStarPathfindingProvider : MonoBehaviour, IPathfindingProvider
+    public class AStarPathfinding : IPathfindingProvider
     {
-        [SerializeField] private GridManager gridManager;
+        private GridManager gridManager;
+
+        public AStarPathfinding(GridManager gridManager)
+        {
+            this.gridManager = gridManager;
+            Debug.Assert(gridManager != null, "Grid manager cannot be null!");
+        }
 
         public IEnumerable<Tile> FindPath(Tile startTile, Tile endTile)
         {

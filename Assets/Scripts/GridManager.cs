@@ -133,6 +133,7 @@ namespace PathfindingDemo
 
         private void Awake()
         {
+            pathfindingProvider = new AStarPathfinding(this);
             tilePool = new MonoObjectPool<Tile>(tilePrefab, MAX_GRID_SIZE * MAX_GRID_SIZE);
         }
 
@@ -154,7 +155,7 @@ namespace PathfindingDemo
                         currentStartTile = currentHoveringTile;
                         SetTileSelection(currentStartTile, true);
                     }
-                    else if (currentEndTile == null)
+                    else if (currentEndTile == null && currentEndTile != currentStartTile)
                     {
                         currentEndTile = currentHoveringTile;
                         var path = GetPath(currentEndTile);
