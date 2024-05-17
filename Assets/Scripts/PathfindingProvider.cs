@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace PathfindingDemo
@@ -6,19 +7,14 @@ namespace PathfindingDemo
     {
         [SerializeField] private GridManager gridManager;
 
-        private Tile currentStartTile = null;
-
-        public void FindPAth(Tile targetTile)
+        public IEnumerable<Vector3> FindPath(Tile startTile, Tile endTile)
         {
-            if (currentStartTile == null || targetTile == null)
+            if (startTile == null || endTile == null)
             {
-                return;
+                return null;
             }
-        }
 
-        private void EndPathfinding()
-        {
-            currentStartTile = null;
+            return null;
         }
     }
 }

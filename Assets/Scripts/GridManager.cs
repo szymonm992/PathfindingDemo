@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace PathfindingDemo
@@ -6,11 +7,15 @@ namespace PathfindingDemo
     public class GridManager : MonoBehaviour
     {
         public delegate void GridSizeUpdateDelegate(int width, int height);
+        public delegate void PathSelectedDelegate(IEnumerable<Vector3> path);
 
         public event GridSizeUpdateDelegate GridSizeUpdateEvent;
+        public event PathSelectedDelegate PathSelectedEvent;
 
         public const float GRID_POSITION_Y = 0.1f;
         public const int MAX_GRID_SIZE = 50;
+
+        public bool IsSelectingTilesPermitted => !playerController.IsMoving; 
 
         [Range(0, MAX_GRID_SIZE)]
         [SerializeField] private int gridWidth = 15;
@@ -18,11 +23,34 @@ namespace PathfindingDemo
         [SerializeField] private int gridHeight = 15;
         [SerializeField] private Tile tilePrefab;
         [SerializeField] private Camera mainCamera;
+        [SerializeField] private PlayerController playerController;
+        [SerializeField] private PathfindingProvider pathfindingProvider;
+        [SerializeField] private LayerMask tileMask;
 
         private MonoObjectPool<Tile> tilePool;
+        private Tile currentHoveringTile = null;
+        private Tile currentStartTile = null;
+        private Tile currentEndTile = null;
+        private Tile previousHoveringTile = null;
         private Tile[,] grid;
         private int previousGridWidth;
         private int previousGridHeight;
+        private bool isDetectingTile;
+
+        public void SetTileSelection(Tile tile, bool value)
+        {
+            if (IsSelectingTilesPermitted)
+            {
+                if (value)
+                {
+                    tile?.SelectTile();
+                }
+                else
+                {
+                    tile?.DeselectTile();
+                }
+            }
+        }
 
         public void UpdateGridSize(int newWidth, int newHeight)
         {
@@ -86,6 +114,76 @@ namespace PathfindingDemo
             previousGridWidth = gridWidth;
             previousGridHeight = gridHeight;
             CreateGrid();
+        }
+
+        private void Update()
+        {
+            isDetectingTile = IsTileSelected();
+
+            if (Input.GetMouseButtonDown(0))
+            {
+                if (isDetectingTile)
+                {
+                    if (currentStartTile == null)
+                    {
+                        currentStartTile = currentHoveringTile;
+                        SetTileSelection(currentStartTile, true);
+                    }
+                    else if (currentEndTile == null)
+                    {
+                        currentEndTile = currentHoveringTile;
+                        var path = GetPath();
+
+                        if (path != null)
+                        {
+                            PathSelectedEvent?.Invoke(path);
+                        }
+
+                        DeselectAllTiles();
+                    }
+                }
+                else
+                {
+                    DeselectAllTiles();
+                }
+            }
+        }
+
+        private IEnumerable<Vector3> GetPath()
+        {
+            return pathfindingProvider?.FindPath(currentStartTile, currentEndTile);
+        }
+
+        private void DeselectAllTiles()
+        {
+            SetTileSelection(currentStartTile, false);
+            SetTileSelection(currentEndTile, false);
+            currentStartTile = null;
+            currentEndTile = null;
+        }
+
+        private bool IsTileSelected()
+        {
+            bool isRaycastingTile = Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out var hit, Mathf.Infinity, tileMask);
+
+            previousHoveringTile = currentHoveringTile;
+
+            if (previousHoveringTile != null)
+            {
+                previousHoveringTile.SetHighlightState(false);
+            }
+
+            if (isRaycastingTile)
+            {
+                currentHoveringTile = hit.collider.GetComponent<Tile>();
+                if (currentHoveringTile != null && currentHoveringTile.IsTraversable)
+                {
+                    currentHoveringTile.SetHighlightState(true);
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

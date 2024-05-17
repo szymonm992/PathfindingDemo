@@ -7,9 +7,11 @@ namespace PathfindingDemo
         public int GridPositionX { get; private set; }
         public int GridPositionY { get; private set; }
         public bool IsTraversable { get; private set; }
+        public bool IsSelected { get; private set; }
 
         [SerializeField] private MeshRenderer meshRenderer;
         [SerializeField] private Color hoverTileColor;
+        [SerializeField] private Color pathTileColor;
         [SerializeField] private Color traversableTileColor;
         [SerializeField] private Color nontraversableTileColor;
 
@@ -41,18 +43,36 @@ namespace PathfindingDemo
 
         private void UpdateTileColor()
         {
-            meshRenderer.material.color = currentTileState == TileState.Traversable ? traversableTileColor : nontraversableTileColor;
-            originalColor = meshRenderer.material.color; 
+            if (IsSelected)
+            {
+                meshRenderer.material.color = pathTileColor;
+                originalColor = meshRenderer.material.color;
+            }
+            else
+            {
+                meshRenderer.material.color = currentTileState == TileState.Traversable ? traversableTileColor : nontraversableTileColor;
+                originalColor = meshRenderer.material.color;
+            }
         }
 
-        private void OnMouseEnter()
+        public void SetHighlightState(bool value)
         {
-            meshRenderer.material.color = hoverTileColor;
+            if (!IsSelected)
+            {
+                meshRenderer.material.color = value ? hoverTileColor : originalColor;
+            }
         }
 
-        private void OnMouseExit()
+        public void SelectTile()
         {
-            meshRenderer.material.color = originalColor;
+            IsSelected = true;
+            UpdateTileColor();
+        }
+
+        public void DeselectTile()
+        {
+            IsSelected = false;
+            UpdateTileColor();
         }
     }
 }
