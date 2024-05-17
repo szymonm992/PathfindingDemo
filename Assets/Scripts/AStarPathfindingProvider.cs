@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace PathfindingDemo
 {
-    public class PathfindingProvider : MonoBehaviour
+    public class AStarPathfindingProvider : MonoBehaviour, IPathfindingProvider
     {
         [SerializeField] private GridManager gridManager;
 

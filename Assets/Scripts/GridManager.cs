@@ -27,10 +27,10 @@ namespace PathfindingDemo
         [SerializeField] private Tile tilePrefab;
         [SerializeField] private Camera mainCamera;
         [SerializeField] private PlayerController playerController;
-        [SerializeField] private PathfindingProvider pathfindingProvider;
         [SerializeField] private LayerMask tileMask;
         [SerializeField] private LayerMask tileObstacleMask;
 
+        private IPathfindingProvider pathfindingProvider;
         private IEnumerable<Tile> currentPath = null;
         private IEnumerable<Tile> previousPath = null;
         private MonoObjectPool<Tile> tilePool;
