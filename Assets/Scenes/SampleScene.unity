@@ -3899,6 +3899,7 @@ MonoBehaviour:
   tilePrefab: {fileID: 3627732998158230737, guid: d7359b4ddb082094e8feed58c333cc5c,
     type: 3}
   mainCamera: {fileID: 330585545}
+  inputManager: {fileID: 395463793}
   tileMask:
     serializedVersion: 2
     m_Bits: 64

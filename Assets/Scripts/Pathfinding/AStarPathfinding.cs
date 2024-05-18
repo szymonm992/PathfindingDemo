@@ -6,11 +6,11 @@ namespace PathfindingDemo
 {
     public class AStarPathfinding : IPathfindingProvider
     {
-        private int tileCost = 1;
+        private readonly int regularTileCost = 1;
 
-        public AStarPathfinding(int tileCost)
+        public AStarPathfinding(int regularTileCost)
         { 
-            this.tileCost = tileCost;   
+            this.regularTileCost = regularTileCost;   
         }
 
         public IEnumerable<Tile> FindPath(Tile startTile, Tile endTile)
@@ -56,7 +56,7 @@ namespace PathfindingDemo
                         continue;
                     }
 
-                    int temporaryGScore = gScore[currentTile] + tileCost;
+                    int temporaryGScore = gScore[currentTile] + regularTileCost;
 
                     if (!gScore.ContainsKey(neighbor.Tile) || temporaryGScore < gScore[neighbor.Tile])
                     {

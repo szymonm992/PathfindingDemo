@@ -13,9 +13,9 @@ namespace PathfindingDemo
         public const float MINIMUM_DISTANCE_THRESHOLD = 0.01f;
 
         public bool IsMoving { get; private set; }
-        public Tile PlayerTile;
+        public Tile PlayerTile { get; private set; }
 
-        [Range(1f, 20f)]
+        [Range(1f, 25f)]
         [SerializeField] private float playerMovementSpeed = 5f;
         [SerializeField] private GridManager gridManager;
 
@@ -28,7 +28,7 @@ namespace PathfindingDemo
                 if (point != PlayerTile)
                 {
                     await MoveTowards(point.transform.position);
-                    PlayerTile = gridManager.RecalculatePlayerTile(transform.position);
+                    UpdatePlayerTile();
                 }
             }
 
@@ -46,24 +46,28 @@ namespace PathfindingDemo
 
         private void Awake()
         {
-            gridManager.PathFoundEvent += OnPathFound;
+            gridManager.PathSelectedEvent += OnPathFound;
             gridManager.GridSizeUpdateEvent += OnGridSizeUpdate;
-            
         }
 
         private void OnGridSizeUpdate(int _, int __)
         {
-            PlayerTile = gridManager.RecalculatePlayerTile(transform.position);
+            UpdatePlayerTile();
         }
 
         private void OnDestroy()
         {
-            gridManager.PathFoundEvent -= OnPathFound;
+            gridManager.PathSelectedEvent -= OnPathFound;
         }
 
         private async void OnPathFound(IEnumerable<Tile> path)
         {
             await MoveAlongThePathAsync(path);
+        }
+
+        private void UpdatePlayerTile()
+        {
+            PlayerTile = gridManager.RecalculatePlayerTile(transform.position);
         }
     }
 }

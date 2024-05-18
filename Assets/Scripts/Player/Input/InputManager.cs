@@ -6,7 +6,10 @@ namespace PathfindingDemo.Player.Input
     public class InputManager : MonoBehaviour
     {
         public delegate void LeftMouseButtonClickDelegate(InputAction.CallbackContext context);
-
+        
+        /// <summary>
+        /// Raised when left mouse button is clicked
+        /// </summary>
         public event LeftMouseButtonClickDelegate LeftMouseButtonClickEvent;
 
         private PlayerControls playerControls;

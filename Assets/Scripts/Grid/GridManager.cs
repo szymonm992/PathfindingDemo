@@ -5,7 +5,6 @@ using System.Linq;
 using UnityEngine;
 using PathfindingDemo.Pooling;
 using PathfindingDemo.Grid.Tile;
-using PathfindingDemo.Providers;
 using PathfindingDemo.Player.Input;
 using UnityEngine.InputSystem;
 
@@ -14,10 +13,17 @@ namespace PathfindingDemo.GridManagement
     public class GridManager : MonoBehaviour
     {
         public delegate void GridSizeUpdateDelegate(int width, int height);
-        public delegate void PathFoundDelegate(IEnumerable<Tile> path);
+        public delegate void PathSelectedDelegate(IEnumerable<Tile> path);
 
+        /// <summary>
+        /// Raised when current grid gets created or regenerated
+        /// </summary>
         public event GridSizeUpdateDelegate GridSizeUpdateEvent;
-        public event PathFoundDelegate PathFoundEvent;
+
+        /// <summary>
+        /// Raised when player has selected a path
+        /// </summary>
+        public event PathSelectedDelegate PathSelectedEvent;
 
         public const float GRID_POSITION_Y = 0.1f;
         public const float TILE_SIZE = 1f;
@@ -35,7 +41,6 @@ namespace PathfindingDemo.GridManagement
         [Range(0, MAX_GRID_SIZE)]
         [SerializeField] private int gridHeight = 15;
         [SerializeField] private Tile tilePrefab;
-        [SerializeField] private Camera mainCamera;
         [SerializeField] private InputManager inputManager;
         [SerializeField] private LayerMask tileMask;
         [SerializeField] private LayerMask tileObstacleMask;
@@ -45,7 +50,6 @@ namespace PathfindingDemo.GridManagement
         private IEnumerable<Tile> previousPath = null;
         private MonoObjectPool<Tile> tilePool;
         private Tile currentHoveringTile = null;
-        
         private Tile currentEndTile = null;
         private Tile previousHoveringTile = null;
         private Tile[,] grid;
@@ -106,7 +110,7 @@ namespace PathfindingDemo.GridManagement
         {
             if (grid != null)
             {
-                foreach (Tile tile in grid)
+                foreach (var tile in grid)
                 {
                     tilePool.ReturnObjectToPool(tile);
                 }
@@ -123,7 +127,7 @@ namespace PathfindingDemo.GridManagement
                 }
             }
 
-            foreach (Tile tile in grid)
+            foreach (var tile in grid)
             {
                 tile.SetNeighbors(GetNeighbors(tile));
             }
@@ -271,7 +275,7 @@ namespace PathfindingDemo.GridManagement
                     if (path != null)
                     {
                         DeselectPathTiles();
-                        PathFoundEvent?.Invoke(currentPath);
+                        PathSelectedEvent?.Invoke(currentPath);
                     }
                 }
             }
