@@ -7,10 +7,11 @@ using PathfindingDemo.Pooling;
 using PathfindingDemo.Grid.Tile;
 using PathfindingDemo.Player.Input;
 using UnityEngine.InputSystem;
+using PathfindingDemo.Providers;
 
 namespace PathfindingDemo.GridManagement
 {
-    public class GridManager : MonoBehaviour
+    public class GridManager : MonoBehaviour, IGridProvider
     {
         public delegate void GridSizeUpdateDelegate(int width, int height);
         public delegate void PathSelectedDelegate(IEnumerable<Tile> path);
@@ -80,6 +81,30 @@ namespace PathfindingDemo.GridManagement
             GenerateGrid().Forget();
         }
 
+        public Tile GetTileAtPosition(Vector2Int position)
+        {
+            if (position.x >= 0 && position.x <= (gridWidth - 1) && position.y >= 0 && position.y <= (gridHeight - 1))
+            {
+                return grid[position.x, position.y];
+            }
+
+            return null;
+        }
+
+        public Tile RecalculatePlayerTile(Vector3 playerPosition)
+        {
+            int x = Mathf.RoundToInt(playerPosition.x / TILE_SIZE);
+            int y = Mathf.RoundToInt(playerPosition.z / TILE_SIZE);
+
+            if (x >= 0 && x < gridWidth && y >= 0 && y < gridHeight)
+            {
+                PlayerTile = grid[x, y];
+                return PlayerTile;
+            }
+
+            return null;
+        }
+
         private IEnumerable<NeighborConnection> GetNeighbors(Tile tile)
         {
             var neighbors = new List<NeighborConnection>();
@@ -88,19 +113,19 @@ namespace PathfindingDemo.GridManagement
 
             if (x > 0)
             {
-                neighbors.Add(new (grid[x - 1, y], Direction.West));
+                neighbors.Add(new (new Vector2Int(x - 1, y), Direction.West));
             }
             if (x < gridWidth - 1)
             {
-                neighbors.Add(new(grid[x + 1, y], Direction.East));
+                neighbors.Add(new (new Vector2Int(x + 1, y), Direction.East));
             }
             if (y > 0)
             {
-                neighbors.Add(new(grid[x, y - 1], Direction.South));
+                neighbors.Add(new (new Vector2Int(x, y - 1), Direction.South));
             }
             if (y < gridHeight - 1)
             {
-                neighbors.Add(new(grid[x, y + 1], Direction.North));
+                neighbors.Add(new (new Vector2Int(x, y + 1), Direction.North));
             }
 
             return neighbors;
@@ -124,12 +149,8 @@ namespace PathfindingDemo.GridManagement
                 {
                     var newTile = await CreateTileAtPosition(x, y);
                     grid[x, y] = newTile;
+                    grid[x, y].SetNeighbors(GetNeighbors(grid[x, y]));
                 }
-            }
-
-            foreach (var tile in grid)
-            {
-                tile.SetNeighbors(GetNeighbors(tile));
             }
 
             previousPath = currentPath;
@@ -194,9 +215,10 @@ namespace PathfindingDemo.GridManagement
 
                 foreach (var neighbor in tile.Neighbors)
                 {
-                    if (neighbor.Tile.IsTraversable && !visited[neighbor.Tile.GridPositionX, neighbor.Tile.GridPositionY])
+                    var neighborTile = GetTileAtPosition(neighbor.GridPosition);
+                    if (neighborTile.IsTraversable && !visited[neighborTile.GridPositionX, neighborTile.GridPositionY])
                     {
-                        stack.Push(neighbor.Tile);
+                        stack.Push(neighborTile);
                     }
                 }
             }
@@ -222,23 +244,9 @@ namespace PathfindingDemo.GridManagement
             return newTile;
         }
 
-        public Tile RecalculatePlayerTile(Vector3 playerPosition)
-        {
-            int x = Mathf.RoundToInt(playerPosition.x / TILE_SIZE);
-            int y = Mathf.RoundToInt(playerPosition.z / TILE_SIZE);
-
-            if (x >= 0 && x < gridWidth && y >= 0 && y < gridHeight)
-            {
-                PlayerTile = grid[x, y];
-                return PlayerTile;
-            }
-
-            return null;
-        }
-
         private void Awake()
         {
-            pathfindingProvider = new AStarPathfinding(TILE_REGULAR_COST);
+            pathfindingProvider = new AStarPathfinding(TILE_REGULAR_COST, this);
             tilePool = new MonoObjectPool<Tile>(tilePrefab, MAX_GRID_SIZE * MAX_GRID_SIZE);
         }
 

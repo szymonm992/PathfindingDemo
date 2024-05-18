@@ -1,15 +1,18 @@
 using System.Collections.Generic;
 using UnityEngine;
 using PathfindingDemo.Grid.Tile;
+using PathfindingDemo.Providers;
 
 namespace PathfindingDemo
 {
     public class AStarPathfinding : IPathfindingProvider
     {
         private readonly int regularTileCost = 1;
+        private readonly IGridProvider gridProvider;
 
-        public AStarPathfinding(int regularTileCost)
+        public AStarPathfinding(int regularTileCost, IGridProvider gridProvider)
         { 
+            this.gridProvider = gridProvider;
             this.regularTileCost = regularTileCost;   
         }
 
@@ -51,22 +54,24 @@ namespace PathfindingDemo
 
                 foreach (var neighbor in currentTile.Neighbors)
                 {
-                    if (!neighbor.Tile.IsAccessible)
+                    var neighborTile = gridProvider.GetTileAtPosition(neighbor.GridPosition);
+
+                    if (neighborTile == null || !neighborTile.IsAccessible)
                     {
                         continue;
                     }
 
                     int temporaryGScore = gScore[currentTile] + regularTileCost;
 
-                    if (!gScore.ContainsKey(neighbor.Tile) || temporaryGScore < gScore[neighbor.Tile])
+                    if (!gScore.ContainsKey(neighborTile) || temporaryGScore < gScore[neighborTile])
                     {
-                        parentTileMap[neighbor.Tile] = currentTile;
-                        gScore[neighbor.Tile] = temporaryGScore;
-                        fScore[neighbor.Tile] = gScore[neighbor.Tile] + HeuristicCost(neighbor.Tile, endTile);
+                        parentTileMap[neighborTile] = currentTile;
+                        gScore[neighborTile] = temporaryGScore;
+                        fScore[neighborTile] = gScore[neighborTile] + HeuristicCost(neighborTile, endTile);
 
-                        if (!openSet.Contains(neighbor.Tile))
+                        if (!openSet.Contains(neighborTile))
                         {
-                            openSet.Add(neighbor.Tile);
+                            openSet.Add(neighborTile);
                         }
                     }
                 }

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using PathfindingDemo.Grid.Tile;
 
-namespace PathfindingDemo
+namespace PathfindingDemo.Providers
 {
     public interface IPathfindingProvider 
     {

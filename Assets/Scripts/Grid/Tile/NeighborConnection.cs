@@ -1,14 +1,16 @@
+using UnityEngine;
+
 namespace PathfindingDemo.Grid.Tile
 {
     [System.Serializable]
     public class NeighborConnection
     {
-        public Tile Tile { get; private set; }
+        public Vector2Int GridPosition { get; private set; }
         public Direction Direction { get; private set; }
 
-        public NeighborConnection(Tile tile, Direction direction)
+        public NeighborConnection(Vector2Int gridPosition, Direction direction)
         {
-            Tile = tile;
+            GridPosition = gridPosition;
             Direction = direction;
         }
     }
