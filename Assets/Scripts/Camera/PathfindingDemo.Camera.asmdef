@@ -1,9 +1,8 @@
 {
-    "name": "PathfindingDemo.Player.Input",
-    "rootNamespace": "PathfindingDemo.Player.Input",
+    "name": "PathfindingDemo.Camera",
+    "rootNamespace": "PathfindingDemo.Camera",
     "references": [
-        "GUID:75469ad4d38634e559750d17036d5f7c",
-        "GUID:9e9579d4039290a4e9ce43929621f74c"
+        "GUID:e062bf77fca351a40891c4ec5001fd4f"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

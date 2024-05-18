@@ -30,13 +30,40 @@ namespace PathfindingDemo.Player.Input
             ""id"": ""b7c24a82-e1ee-441f-b67d-793d81afcbda"",
             ""actions"": [
                 {
-                    ""name"": ""Click"",
+                    ""name"": ""LeftMouseButtonDown"",
                     ""type"": ""Button"",
                     ""id"": ""14bdb45c-8247-4161-83da-f8a88cb15a6c"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""RightMouseButtonDown"",
+                    ""type"": ""Button"",
+                    ""id"": ""4bf44cae-afb8-43ef-92bc-46cf37ec0e2c"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""ScrollMouse"",
+                    ""type"": ""Value"",
+                    ""id"": ""a5b93de9-99d5-4061-8ab5-d8c61caeb915"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""Move"",
+                    ""type"": ""Value"",
+                    ""id"": ""eb7bd1b6-24d2-46fd-8d27-753e2752b94e"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -47,9 +74,97 @@ namespace PathfindingDemo.Player.Input
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""Click"",
+                    ""action"": ""LeftMouseButtonDown"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""fb018806-4ece-48c3-8fc5-f0b777708e86"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""RightMouseButtonDown"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""abc97d6b-f231-4f41-a00f-37c383c8c2f2"",
+                    ""path"": ""<Mouse>/scroll"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ScrollMouse"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""582f0fbc-ef2c-4f68-a3ae-2af2b117c326"",
+                    ""path"": """",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Move"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""2D Vector"",
+                    ""id"": ""2b2c5ed6-63b0-4127-98d7-65fc3639be59"",
+                    ""path"": ""2DVector"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Move"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""up"",
+                    ""id"": ""99c33e64-2506-44ee-9e5d-47ba2c5bda80"",
+                    ""path"": ""<Keyboard>/upArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Move"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""down"",
+                    ""id"": ""5b48b1c6-214b-4106-b53a-959ba90fd386"",
+                    ""path"": ""<Keyboard>/downArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Move"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""left"",
+                    ""id"": ""ecb58008-3c61-4d35-9ea3-9dcb3ee702bd"",
+                    ""path"": ""<Keyboard>/leftArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Move"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""right"",
+                    ""id"": ""1179eadd-9c82-4ded-84c3-46e00e1c58e8"",
+                    ""path"": ""<Keyboard>/rightArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Move"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
                 }
             ]
         }
@@ -58,7 +173,10 @@ namespace PathfindingDemo.Player.Input
 }");
             // Player
             m_Player = asset.FindActionMap("Player", throwIfNotFound: true);
-            m_Player_Click = m_Player.FindAction("Click", throwIfNotFound: true);
+            m_Player_LeftMouseButtonDown = m_Player.FindAction("LeftMouseButtonDown", throwIfNotFound: true);
+            m_Player_RightMouseButtonDown = m_Player.FindAction("RightMouseButtonDown", throwIfNotFound: true);
+            m_Player_ScrollMouse = m_Player.FindAction("ScrollMouse", throwIfNotFound: true);
+            m_Player_Move = m_Player.FindAction("Move", throwIfNotFound: true);
         }
 
         public void Dispose()
@@ -120,12 +238,18 @@ namespace PathfindingDemo.Player.Input
         // Player
         private readonly InputActionMap m_Player;
         private List<IPlayerActions> m_PlayerActionsCallbackInterfaces = new List<IPlayerActions>();
-        private readonly InputAction m_Player_Click;
+        private readonly InputAction m_Player_LeftMouseButtonDown;
+        private readonly InputAction m_Player_RightMouseButtonDown;
+        private readonly InputAction m_Player_ScrollMouse;
+        private readonly InputAction m_Player_Move;
         public struct PlayerActions
         {
             private @PlayerControls m_Wrapper;
             public PlayerActions(@PlayerControls wrapper) { m_Wrapper = wrapper; }
-            public InputAction @Click => m_Wrapper.m_Player_Click;
+            public InputAction @LeftMouseButtonDown => m_Wrapper.m_Player_LeftMouseButtonDown;
+            public InputAction @RightMouseButtonDown => m_Wrapper.m_Player_RightMouseButtonDown;
+            public InputAction @ScrollMouse => m_Wrapper.m_Player_ScrollMouse;
+            public InputAction @Move => m_Wrapper.m_Player_Move;
             public InputActionMap Get() { return m_Wrapper.m_Player; }
             public void Enable() { Get().Enable(); }
             public void Disable() { Get().Disable(); }
@@ -135,16 +259,34 @@ namespace PathfindingDemo.Player.Input
             {
                 if (instance == null || m_Wrapper.m_PlayerActionsCallbackInterfaces.Contains(instance)) return;
                 m_Wrapper.m_PlayerActionsCallbackInterfaces.Add(instance);
-                @Click.started += instance.OnClick;
-                @Click.performed += instance.OnClick;
-                @Click.canceled += instance.OnClick;
+                @LeftMouseButtonDown.started += instance.OnLeftMouseButtonDown;
+                @LeftMouseButtonDown.performed += instance.OnLeftMouseButtonDown;
+                @LeftMouseButtonDown.canceled += instance.OnLeftMouseButtonDown;
+                @RightMouseButtonDown.started += instance.OnRightMouseButtonDown;
+                @RightMouseButtonDown.performed += instance.OnRightMouseButtonDown;
+                @RightMouseButtonDown.canceled += instance.OnRightMouseButtonDown;
+                @ScrollMouse.started += instance.OnScrollMouse;
+                @ScrollMouse.performed += instance.OnScrollMouse;
+                @ScrollMouse.canceled += instance.OnScrollMouse;
+                @Move.started += instance.OnMove;
+                @Move.performed += instance.OnMove;
+                @Move.canceled += instance.OnMove;
             }
 
             private void UnregisterCallbacks(IPlayerActions instance)
             {
-                @Click.started -= instance.OnClick;
-                @Click.performed -= instance.OnClick;
-                @Click.canceled -= instance.OnClick;
+                @LeftMouseButtonDown.started -= instance.OnLeftMouseButtonDown;
+                @LeftMouseButtonDown.performed -= instance.OnLeftMouseButtonDown;
+                @LeftMouseButtonDown.canceled -= instance.OnLeftMouseButtonDown;
+                @RightMouseButtonDown.started -= instance.OnRightMouseButtonDown;
+                @RightMouseButtonDown.performed -= instance.OnRightMouseButtonDown;
+                @RightMouseButtonDown.canceled -= instance.OnRightMouseButtonDown;
+                @ScrollMouse.started -= instance.OnScrollMouse;
+                @ScrollMouse.performed -= instance.OnScrollMouse;
+                @ScrollMouse.canceled -= instance.OnScrollMouse;
+                @Move.started -= instance.OnMove;
+                @Move.performed -= instance.OnMove;
+                @Move.canceled -= instance.OnMove;
             }
 
             public void RemoveCallbacks(IPlayerActions instance)
@@ -164,7 +306,10 @@ namespace PathfindingDemo.Player.Input
         public PlayerActions @Player => new PlayerActions(this);
         public interface IPlayerActions
         {
-            void OnClick(InputAction.CallbackContext context);
+            void OnLeftMouseButtonDown(InputAction.CallbackContext context);
+            void OnRightMouseButtonDown(InputAction.CallbackContext context);
+            void OnScrollMouse(InputAction.CallbackContext context);
+            void OnMove(InputAction.CallbackContext context);
         }
     }
 }
