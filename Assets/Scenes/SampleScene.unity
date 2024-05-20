@@ -1325,6 +1325,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mainCamera: {fileID: 330585545}
   gridManager: {fileID: 1886297378}
+  inputManager: {fileID: 395463793}
+  cameraMovementSpeed: 10
 --- !u!1 &395463790
 GameObject:
   m_ObjectHideFlags: 0
@@ -1355,7 +1357,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c14ac4a356c16a4a8be5fc4c4c48302, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  PlayerTile: {fileID: 0}
   playerMovementSpeed: 5
   gridManager: {fileID: 1886297378}
 --- !u!4 &395463792
@@ -3898,7 +3899,6 @@ MonoBehaviour:
   gridHeight: 35
   tilePrefab: {fileID: 3627732998158230737, guid: d7359b4ddb082094e8feed58c333cc5c,
     type: 3}
-  mainCamera: {fileID: 330585545}
   inputManager: {fileID: 395463793}
   tileMask:
     serializedVersion: 2

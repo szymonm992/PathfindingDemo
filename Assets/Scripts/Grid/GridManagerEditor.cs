@@ -1,4 +1,3 @@
-using PathfindingDemo;
 using UnityEditor;
 using UnityEngine;
 
@@ -41,5 +40,4 @@ namespace PathfindingDemo.GridManagement
             EditorUtility.SetDirty(gridManager);
         }
     }
-
 }

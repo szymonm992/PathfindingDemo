@@ -2,7 +2,9 @@
     "name": "PathfindingDemo.Camera",
     "rootNamespace": "PathfindingDemo.Camera",
     "references": [
-        "GUID:e062bf77fca351a40891c4ec5001fd4f"
+        "GUID:e062bf77fca351a40891c4ec5001fd4f",
+        "GUID:307d16014860ca14cabae7c65319d143",
+        "GUID:75469ad4d38634e559750d17036d5f7c"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

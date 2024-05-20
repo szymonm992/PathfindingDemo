@@ -1,4 +1,5 @@
 using PathfindingDemo.GridManagement;
+using PathfindingDemo.Player.Input;
 using UnityEngine;
 
 namespace PathfindingDemo.Camera
@@ -7,14 +8,14 @@ namespace PathfindingDemo.Camera
     {
         [SerializeField] private UnityEngine.Camera mainCamera;
         [SerializeField] private GridManager gridManager;
+        [SerializeField] private InputManager inputManager;
+        [SerializeField] private float cameraMovementSpeed = 10f;
 
-        private CameraMode currentCameraMode;
         private int gridWidth;
         private int gridHeight;
 
         private void Awake()
         {
-            SetCameraMode(CameraMode.Hovering);
             gridManager.GridSizeUpdateEvent += OnGridSizeUpdate;
         }
 
@@ -23,54 +24,37 @@ namespace PathfindingDemo.Camera
             gridManager.GridSizeUpdateEvent -= OnGridSizeUpdate;
         }
 
-        private void SetCameraMode(CameraMode cameraMode)
+        private void Update()
         {
-            currentCameraMode = cameraMode;
-             
-            switch (cameraMode)
-            {
-                case CameraMode.Hovering:
-                {
-                    UpdateHoveringCamera();
-                }
-                break;
-                case CameraMode.Free:
-                {
-                    
-                }
-                break;
-            }
+            CameraMovement();
         }
 
         private void OnGridSizeUpdate(int gridWidth, int gridHeight)
         {
             this.gridWidth = gridWidth;
             this.gridHeight = gridHeight;
-
-            if (currentCameraMode == CameraMode.Hovering)
-            {
-                UpdateHoveringCamera();
-            }
+            UpdateCameraPosition();
         }
 
-        private void UpdateHoveringCamera()
+        private void UpdateCameraPosition()
         {
-            Vector3 cameraPosition = new(gridWidth * 0.5f, 0f, gridHeight * 0.5f);
+            Vector3 gridCenterPosition = new(gridWidth * 0.5f, 0f, gridHeight * 0.5f);
 
             float angle = 90f - mainCamera.transform.eulerAngles.x;
             float offsetY = Mathf.Tan(angle * Mathf.Deg2Rad) * Mathf.Sqrt((gridWidth * 0.5f) * (gridWidth * 0.5f) + (gridHeight * 0.5f) * (gridHeight * 0.5f));
             float offsetZ = Mathf.Tan(angle * Mathf.Deg2Rad) * Mathf.Sqrt((gridWidth * 0.5f) * (gridWidth * 0.5f) + (gridHeight * 0.5f) * (gridHeight * 0.5f));
 
-            cameraPosition += new Vector3(0f, offsetY, -offsetZ);
-            mainCamera.transform.position = cameraPosition;
+            gridCenterPosition += new Vector3(0f, offsetY, -offsetZ);
+            mainCamera.transform.position = gridCenterPosition;
 
             float gridSize = Mathf.Max(gridWidth, gridHeight);
             mainCamera.orthographicSize = (gridSize * 0.5f);
         }
 
-        private void SetFreeCamera()
+        private void CameraMovement()
         {
-
+            Vector3 movementVector = new (inputManager.SignedHorizontal, 0, inputManager.SignedVertical);
+            mainCamera.transform.Translate(cameraMovementSpeed * Time.deltaTime * movementVector, Space.World);
         }
     }
 }

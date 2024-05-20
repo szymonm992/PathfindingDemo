@@ -4,7 +4,7 @@ using UnityEngine.InputSystem;
 
 namespace PathfindingDemo.Player.Input
 {
-    public class InputManager : MonoBehaviour, IInputsProvider
+    public class InputManager : MonoBehaviour
     {
         public delegate void InputActionDelegate(InputAction.CallbackContext context);
         
@@ -13,8 +13,9 @@ namespace PathfindingDemo.Player.Input
         public event InputActionDelegate ScrollMouseEvent;
 
         public float Horizontal => moveInput.x;
-        public float Vertical => moveInput.x;
-        public Vector2 MoveInputSigned => new (GetSignedValue(Horizontal), GetSignedValue(Vertical));
+        public float Vertical => moveInput.y;
+        public float SignedHorizontal => GetSignedValue(Horizontal);
+        public float SignedVertical => GetSignedValue(Vertical);
 
         private PlayerControls playerControls;
         private Vector2 moveInput;
@@ -55,13 +56,11 @@ namespace PathfindingDemo.Player.Input
 
         private void OnScrollMouse(InputAction.CallbackContext context)
         {
-            Debug.Log("dfsfsdf");
             ScrollMouseEvent?.Invoke(context);
         }
 
         private void OnLeftMouseButtonDown(InputAction.CallbackContext context)
         {
-            Debug.Log("dfsfsdf");
             LeftMouseButtonClickEvent?.Invoke(context);   
         }
         
